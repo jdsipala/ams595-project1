@@ -1,31 +1,5 @@
-% UNCOMMENT lines at the bottom to see the graphs/ outputs
+%%---------- Q1 script code
 
-
-
-% creating montecarlo for loop function
-% area of circle = pi*r^2
-% area of square = 4*r^2
-% P(dot in circle) = (pi*r^2) / (4*r^2) = pi / 4
-% => 4*P(dot in circle) = estimate of pi
-% P(dot in circle) = x^2 + y^2 <= r^2
-
-function pi_estimate = pi_montecarlo(N)
-    count_dotsincircle = 0;                     %initialize count
-    for i = 1:N
-        x = rand();                             % Generate random x ~ U[0,1]
-        y = rand();                             % Generate random y ~ U[0,1]
-        if x*x + y*y <= 1                       % => (x,y) lies within a radius of 1
-            count_dotsincircle = count_dotsincircle + 1; % adds to the count
-        end
-    end
-    pi_estimate = 4 * count_dotsincircle / N; % Estimate pi based on ( 4 * (inside/total))
-end
-
-% Question 1 — Monte Carlo pi with a for-loop
-% - Compute estimate of pi
-% - Plot deviation as N increases
-% - Measure runtime for each N and plot precision vs computational cost
-%
 % rng(0);
 
 N_values = 100:100:30000; % vector of n values
@@ -75,11 +49,36 @@ title('Precision vs Computational Cost');
 grid on; 
 hold off
 
+%%----------- Q2/Q3 calls (commented lines below)
+% [pi2, N2] = pi_sigfigs(4, 1000);
+% [pi3, N3] = pi_sigfigs_plot(2, 1000);
+
+%%---------- all functions below
+
+% creating montecarlo for loop function
+% area of circle = pi*r^2
+% area of square = 4*r^2
+% P(dot in circle) = (pi*r^2) / (4*r^2) = pi / 4
+% => 4*P(dot in circle) = estimate of pi
+% P(dot in circle) = x^2 + y^2 <= r^2
+
+function pi_estimate = pi_montecarlo(N)
+    count_dotsincircle = 0;                     %initialize count
+    for i = 1:N
+        x = rand();                             % Generate random x ~ U[0,1]
+        y = rand();                             % Generate random y ~ U[0,1]
+        if x*x + y*y <= 1                       % => (x,y) lies within a radius of 1
+            count_dotsincircle = count_dotsincircle + 1; % adds to the count
+        end
+    end
+    pi_estimate = 4 * count_dotsincircle / N; % Estimate pi based on ( 4 * (inside/total))
+end
+
 %question 2 of project 1
 
 % while loop to compute pi and round to x significant figures
 % stop rule:
-% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt(p_hat)*(1-p_hat)/N).
+% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt((p_hat)*(1-p_hat)/N).
 
 function[pi_estimate,N] = pi_sigfigs(figures, batch)
     N=0;
@@ -176,18 +175,5 @@ function[pi_estimate,N] = pi_sigfigs_plot(figures, batch)
         '  number of sig figs : ', num2str(figures)]);
 end
 
-%%%%%%%%%%%%%% run project 1 (Q1, Q2, Q3) %%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%% --- Q1: generate the plots (deviation vs N) and (precision vs cost)
-%q1_project1;
-
-%% --- Q2: while-loop to requested precision (significant figures)
-%[pi2, N2] = pi_sigfigs(4, 1000);     % 4 sig figs, batch of 1000
-%disp(['estimate of pi: ', num2str(pi2,6), '   N = ', num2str(N2)]);
-
-%% --- Q3: live plot with inside/outside dots; returns pi and prints on plot
-%[pi3, N3] = pi_sigfigs_plot(2, 1000); 
-%disp(['Q3 -> estimate of pi: ', num2str(pi3,6), '   N = ', num2str(N3)]);

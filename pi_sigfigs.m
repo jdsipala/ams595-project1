@@ -2,7 +2,7 @@
 
 % while loop to compute pi and round to x significant figures
 % stop rule:
-% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt(p_hat)*(1-p_hat)/N).
+% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt((p_hat)*(1-p_hat)/N).
 
 function[pi_estimate,N] = pi_sigfigs(figures, batch)
     N=0;
