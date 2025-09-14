@@ -12,10 +12,13 @@ montecarlo pi estimate
 
 
 % Q1
+
 q1_project1
 
 % Q2 (e.g., 2 significant figures, batch=1000)
+
 [pi2, N2] = pi_sigfigs(2, 1000);
 
 % Q3 (live plot)
+
 [pi3, N3] = pi_sigfigs_plot(2, 200);

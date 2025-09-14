@@ -23,7 +23,7 @@ function[pi_estimate,N] = pi_sigfigs_plot(figures, batch)
     plot(cos(theta), sin(theta), 'r', 'LineWidth', 2); % plot the quarter circle line
     inside_dot = animatedline('Color','b','Marker','.','LineStyle','none'); %initialize string of blue dots inside the circle
     outside_dot = animatedline('Color','k','Marker','.','LineStyle','none'); %initialize string of black dots outside the circle
-    show_every = 1000;  % initalize number of points to plot per loop
+    show_every = 1000;  % initalize number of points to plot per loop, lower this number for smoother animation
 
     % create a condition that stays in the loop until upper and lower
     % bounds are equal at specified number of figures
@@ -46,7 +46,7 @@ function[pi_estimate,N] = pi_sigfigs_plot(figures, batch)
         end
 % create upper and lower bounds for standard error for binomial
 % distribution => SE = sqrt(pq / n)
-% using 85% CI for this one because plotting the graph makes this take a
+% using 95% CI for this one because plotting the graph makes this take a
 % long time to run
         p_hat = count_incircle / N;
         pi_estimate = 4 * p_hat;
