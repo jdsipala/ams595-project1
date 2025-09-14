@@ -1,6 +1,8 @@
 %question 2 of project 1
 
-% while loop to compute pi and use round to s
+% while loop to compute pi and round to x significant figures
+% stop rule:
+% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt(p_hat)*(1-p_hat)/N).
 
 function[pi_estimate,N] = pi_sigfigs(figures, batch)
     N=0;
@@ -11,7 +13,8 @@ function[pi_estimate,N] = pi_sigfigs(figures, batch)
     % create a condition that stays in the loop until upper and lower
     % bounds are equal at specified number of figures
     while round(Lower, figures, 'significant') ~= round(Upper, figures, 'significant')
-        % for loop 
+        % for loop that creates random (x,y) and counts if it is inside the
+        % circle
         for j = 1:batch
             x = rand();
             y= rand();
@@ -20,7 +23,8 @@ function[pi_estimate,N] = pi_sigfigs(figures, batch)
             end
             N= N+1;
         end
-
+% create upper and lower bounds for standard error for binomial
+% distribution => SE = sqrt(pq / n)
         p_hat = count_incircle / N;
         pi_estimate = 4 * p_hat;
         se_pi = 4 * sqrt((p_hat * (1-p_hat))/ N);
@@ -29,4 +33,3 @@ function[pi_estimate,N] = pi_sigfigs(figures, batch)
         Upper = pi_estimate + CIbounds;
     end
 end
-       
