@@ -1,0 +1,193 @@
+% UNCOMMENT lines at the bottom to see the graphs/ outputs
+
+
+
+% creating montecarlo for loop function
+% area of circle = pi*r^2
+% area of square = 4*r^2
+% P(dot in circle) = (pi*r^2) / (4*r^2) = pi / 4
+% => 4*P(dot in circle) = estimate of pi
+% P(dot in circle) = x^2 + y^2 <= r^2
+
+function pi_estimate = pi_montecarlo(N)
+    count_dotsincircle = 0;                     %initialize count
+    for i = 1:N
+        x = rand();                             % Generate random x ~ U[0,1]
+        y = rand();                             % Generate random y ~ U[0,1]
+        if x*x + y*y <= 1                       % => (x,y) lies within a radius of 1
+            count_dotsincircle = count_dotsincircle + 1; % adds to the count
+        end
+    end
+    pi_estimate = 4 * count_dotsincircle / N; % Estimate pi based on ( 4 * (inside/total))
+end
+
+% Question 1 — Monte Carlo pi with a for-loop
+% - Compute estimate of pi
+% - Plot deviation as N increases
+% - Measure runtime for each N and plot precision vs computational cost
+%
+% rng(0);
+
+N_values = 100:100:30000; % vector of n values
+
+% compute pi_hat for each N (apply the pi_montecarlo function to each N in the vector of n values)
+pi_values = arrayfun(@pi_montecarlo, N_values);
+
+% calculate the deviation from the true value of pi
+deviation = abs(pi_values - pi); 
+
+
+% plot deviation vs N
+figure;
+plot(N_values, deviation, '-o'); % plot the deviation against N_values
+hold on; % retain current plot
+movingAvgDeviation = smoothdata(deviation, 'movmean', 50); % compute moving average
+plot(N_values, movingAvgDeviation, 'r-', 'LineWidth', 1.5); % plot moving average in red for better visual
+xlabel('Number of Points (N)');
+ylabel('Deviation from Pi');
+title('Deviation of Monte Carlo Estimate of Pi');
+grid on;
+
+
+% measure runtime for each N
+runtime = zeros(size(N_values)); % preallocate runtime array
+for i = 1:length(N_values)
+    tic;                         %  start timer
+    pi_montecarlo(N_values(i));  % run Monte Carlo simulation
+    runtime(i) = toc;            % elapsed time for this N
+end
+
+% plot precision vs computational cost
+figure;
+
+% sort by runtime so the graph is chronological
+[rt_sorted, idx] = sort(runtime);
+dev_sorted = deviation(idx);
+
+plot(rt_sorted, dev_sorted, '-s'); % plot runtime vs deviation
+hold on
+dev_smooth = smoothdata(dev_sorted, 'movmean', 50);  % initialize moving average
+plot(rt_sorted, dev_smooth, 'r-', 'LineWidth', 1.5); % plot moving average in red for smoother line
+
+xlabel('Time (s)');
+ylabel('Deviation from Pi');
+title('Precision vs Computational Cost');
+grid on; 
+hold off
+
+%question 2 of project 1
+
+% while loop to compute pi and round to x significant figures
+% stop rule:
+% build a 95% CI for pi_hat using SE(pi_hat) ≈ 4*sqrt(p_hat)*(1-p_hat)/N).
+
+function[pi_estimate,N] = pi_sigfigs(figures, batch)
+    N=0;
+    count_incircle = 0; %initialize counter of dots in circle
+    Lower = -Inf; % Initialize Lower bound
+    Upper = Inf; % Initialize Upper bound
+
+    % create a condition that stays in the loop until upper and lower
+    % bounds are equal at specified number of figures
+    while round(Lower, figures, 'significant') ~= round(Upper, figures, 'significant')
+        % for loop that creates random (x,y) and counts if it is inside the
+        % circle
+        for j = 1:batch  % add chosen batch size number of points
+            x = rand();
+            y= rand();
+            if x*x + y*y <= 1
+                count_incircle = count_incircle + 1;
+            end
+            N= N+1;
+        end
+% create upper and lower bounds for standard error for binomial
+% distribution => SE = sqrt(pq / n)
+        p_hat = count_incircle / N;
+        pi_estimate = 4 * p_hat;
+        se_pi = 4 * sqrt((p_hat * (1-p_hat))/ N);
+        CIbounds = 1.96 * se_pi;          % z=1.96 for 95%
+        Lower = pi_estimate - CIbounds;
+        Upper = pi_estimate + CIbounds;
+    end
+end
+
+% question 3 of project 1
+
+% create a function that plots points one by one as they are generated
+% with points inside the circle different color from points outside the
+% circle, returns estimated pi and number of sig figs
+
+function[pi_estimate,N] = pi_sigfigs_plot(figures, batch)
+    N=0;
+    count_incircle = 0; %initialize counter of dots in circle
+    Lower = -Inf; % Initialize Lower bound
+    Upper = Inf; % Initialize Upper bound
+
+    % figure setup using a quarter circle
+    figure;
+    axis([0 1 0 1]); %create the area for the entire graph
+    axis square;
+    box on;
+    hold on
+    xlabel('x');
+    ylabel('y');
+    title('Monte Carlo Simulation');
+    theta = linspace(0, pi/2, 100); % o to pi/2 represents the positive quadrant
+    plot(cos(theta), sin(theta), 'r', 'LineWidth', 2); % plot the quarter circle line
+    inside_dot = animatedline('Color','b','Marker','.','LineStyle','none'); %initialize string of blue dots inside the circle
+    outside_dot = animatedline('Color','k','Marker','.','LineStyle','none'); %initialize string of black dots outside the circle
+    show_every = 1000;  % initalize number of points to plot per loop, lower this number for smoother animation
+
+    % create a condition that stays in the loop until upper and lower
+    % bounds are equal at specified number of figures
+    while round(Lower, figures, 'significant') ~= round(Upper, figures, 'significant')
+        % for loop that creates random (x,y) and counts if it is inside the
+        % circle
+        for j = 1:batch
+            x = rand();
+            y= rand();
+            if x*x + y*y <= 1
+                count_incircle = count_incircle + 1;
+                addpoints(inside_dot,x,y); % add inside dot
+            else
+                addpoints(outside_dot,x,y); % add outside dot
+            end
+            N= N+1;
+            if mod(N,show_every)==0
+                drawnow; % when show_every=1 --> drawnow will be called each time a point is added
+            end
+        end
+% create upper and lower bounds for standard error for binomial
+% distribution => SE = sqrt(pq / n)
+% using 95% CI for this one because plotting the graph makes this take a
+% long time to run
+        p_hat = count_incircle / N;
+        pi_estimate = 4 * p_hat;
+        se_pi = 4 * sqrt((p_hat * (1-p_hat))/ N);
+        CIbounds = 1.96 * se_pi;
+        Lower = pi_estimate - CIbounds;
+        Upper = pi_estimate + CIbounds;
+    end
+    % Calculate the final estimate of pi and print results
+    disp(['Estimated value of pi: ', num2str(pi_estimate,6), ...
+        '  number of sig figs : ', num2str(figures)]);
+    % display the final estimate of pi and # of sig figs on the graph
+    text(0.05,0.95,['Estimated value of pi: ', num2str(pi_estimate,6) ...
+        '  number of sig figs : ', num2str(figures)]);
+end
+
+%%%%%%%%%%%%%% run project 1 (Q1, Q2, Q3) %%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%% --- Q1: generate the plots (deviation vs N) and (precision vs cost)
+%q1_project1;
+
+%% --- Q2: while-loop to requested precision (significant figures)
+%[pi2, N2] = pi_sigfigs(4, 1000);     % 4 sig figs, batch of 1000
+%disp(['estimate of pi: ', num2str(pi2,6), '   N = ', num2str(N2)]);
+
+%% --- Q3: live plot with inside/outside dots; returns pi and prints on plot
+%[pi3, N3] = pi_sigfigs_plot(2, 1000); 
+%disp(['Q3 -> estimate of pi: ', num2str(pi3,6), '   N = ', num2str(N3)]);
